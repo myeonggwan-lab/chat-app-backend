@@ -58,7 +58,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers(HttpMethod.POST, "/members").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reissue").permitAll()
-                .requestMatchers("/", "/login", "/members").permitAll()
+                .requestMatchers(HttpMethod.POST, "/verification-mails").permitAll()
+                .requestMatchers("/", "/login", "/members", "/verification-mails/verify").permitAll()
                 .anyRequest().authenticated());
 
         http.sessionManagement(
