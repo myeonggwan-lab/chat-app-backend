@@ -1,9 +1,12 @@
 package com.example.chat_app.controller;
 
 import com.example.chat_app.dto.MemberDto;
+import com.example.chat_app.dto.ResetPasswordDto;
 import com.example.chat_app.dto.SuccessResponse;
 import com.example.chat_app.exception.InvalidFieldException;
+import com.example.chat_app.exception.InvalidTokenException;
 import com.example.chat_app.service.MemberService;
+import com.example.chat_app.service.VerificationTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,7 @@ import static com.example.chat_app.dto.SuccessResponse.*;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
+    private final VerificationTokenService verificationTokenService;
 
     // 회원가입
     @PostMapping("/members")
@@ -52,5 +56,20 @@ public class MemberController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(SuccessResponse.success("사용 가능합니다.", null));
+    }
+
+    // 비밀번호 재설정
+    @PatchMapping("/auth/reset-password")
+    public ResponseEntity<SuccessResponse> resetPassword(@RequestParam String token, @RequestBody ResetPasswordDto resetPasswordDto) {
+        if(!verificationTokenService.verifyToken(token)) {
+            throw new InvalidTokenException("INVALID_TOKEN", "토큰이 유효하지 않습니다.");
+        }
+
+        String email = verificationTokenService.getEmailFromToken(token);
+        memberService.resetPassword(email, resetPasswordDto);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessResponse.success("비밀번호 재설정 완료", null));
     }
 }

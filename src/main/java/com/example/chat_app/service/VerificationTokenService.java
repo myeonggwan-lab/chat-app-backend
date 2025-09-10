@@ -1,6 +1,5 @@
 package com.example.chat_app.service;
 
-import com.example.chat_app.exception.InvalidTokenException;
 import com.example.chat_app.repository.redis.VerificationTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,12 +21,15 @@ public class VerificationTokenService {
         return token;
     }
 
-    public void verifyToken(String token) {
-        String key = "verification:token:" + token;
-        String mail = verificationTokenRepository.getToken(key);
+    public boolean verifyToken(String token) {
+        String email = getEmailFromToken(token);
 
-        if(mail == null) {
-            throw new InvalidTokenException("INVALID_TOKEN", "유효하지 않은 토큰입니다.");
-        }
+        return email != null;
+    }
+
+    public String getEmailFromToken(String token) {
+        String key = "verification:token:" + token;
+
+        return verificationTokenRepository.getToken(key);
     }
 }

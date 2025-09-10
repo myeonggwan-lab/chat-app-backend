@@ -2,13 +2,19 @@ package com.example.chat_app.service;
 
 import com.example.chat_app.dto.MemberDto;
 
+import com.example.chat_app.dto.ResetPasswordDto;
+import com.example.chat_app.entity.Member;
+import com.example.chat_app.exception.EntityNotFound;
 import com.example.chat_app.exception.InvalidFieldException;
 import com.example.chat_app.exception.MemberAlreadyExistsException;
 import com.example.chat_app.repository.mysql.MemberRepository;
 import com.example.chat_app.utils.MemberUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -16,6 +22,7 @@ import java.util.regex.Pattern;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final MemberUtils memberUtils;
+    private final PasswordEncoder passwordEncoder;
 
     // 영어 대소문자만, 4~12자
     private static final Pattern LOGIN_ID_PATTERN = Pattern.compile("^[a-zA-Z]{4,12}$");
@@ -24,6 +31,7 @@ public class MemberService {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,16}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$");
 
+    @Transactional
     public void registerMember(MemberDto memberDto) {
         if(memberRepository.findByLoginId(memberDto.getLoginId()).isPresent()) {
             throw new MemberAlreadyExistsException("EXISTED_MEMBER", "이미 존재하는 회원입니다.");
@@ -69,5 +77,28 @@ public class MemberService {
         if(memberRepository.existsByNickname(nickname)) {
             throw new MemberAlreadyExistsException("DUPLICATED_NICKNAME", "이미 사용 중인 닉네임입니다.");
         }
+    }
+
+    // 아이디 찾기
+    public String getLoginId(String email) {
+        Optional<Member> member = memberRepository.findByEmail(email);
+
+        if(member.isEmpty()) {
+            throw new EntityNotFound("NOT_FOUND","등록된 회원이 없습니다.");
+        }
+
+        return member.get().getLoginId();
+    }
+
+    // 비밀번호 재설정
+    @Transactional
+    public void resetPassword(String email, ResetPasswordDto resetPasswordDto) {
+        Optional<Member> member = memberRepository.findByEmail(email);
+
+        if(member.isEmpty()) {
+            throw new EntityNotFound("NOT_FOUND", "등록된 회원이 존재하지 않습니다.");
+        }
+
+        member.get().changePassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
     }
 }

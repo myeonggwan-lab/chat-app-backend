@@ -56,10 +56,8 @@ public class SecurityConfig {
         http.addFilterAt(new CustomLogoutFilter(jwtUtil, refreshTokenService, invalidTokenRepository), LogoutFilter.class);
 
         http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers(HttpMethod.POST, "/members").permitAll()
                 .requestMatchers(HttpMethod.POST, "/reissue").permitAll()
-                .requestMatchers(HttpMethod.POST, "/verification-mails").permitAll()
-                .requestMatchers("/", "/login", "/members", "/verification-mails/verify").permitAll()
+                .requestMatchers("/", "/auth/**", "/members", "/members/check").permitAll()
                 .anyRequest().authenticated());
 
         http.sessionManagement(
