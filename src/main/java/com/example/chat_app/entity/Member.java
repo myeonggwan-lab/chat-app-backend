@@ -25,4 +25,9 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Role role = Role.ROLE_USER;
+
+    // 비밀번호 변경
+    public void changePassword(String password) {
+        this.password = password;
+    }
 }

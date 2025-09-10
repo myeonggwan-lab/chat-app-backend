@@ -58,4 +58,14 @@ public class ExceptionController {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(EntityNotFound.class)
+    public ResponseEntity<FailResponse> handleEntityNotFound(EntityNotFound e) {
+        FailResponse response = FailResponse.builder()
+                .status("fail")
+                .code(e.getCode())
+                .message(e.getMessage()).build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }
