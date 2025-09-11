@@ -1,5 +1,6 @@
 package com.example.chat_app.dto;
 
+import com.example.chat_app.enums.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 

@@ -2,12 +2,15 @@ package com.example.chat_app.service;
 
 import com.example.chat_app.dto.MemberDto;
 
+import com.example.chat_app.enums.MemberField;
+import com.example.chat_app.dto.UpdateMemberFieldDto;
 import com.example.chat_app.dto.ResetPasswordDto;
 import com.example.chat_app.entity.Member;
 import com.example.chat_app.exception.EntityNotFound;
 import com.example.chat_app.exception.InvalidFieldException;
 import com.example.chat_app.exception.MemberAlreadyExistsException;
 import com.example.chat_app.repository.mysql.MemberRepository;
+import com.example.chat_app.security.jwt.JwtUtil;
 import com.example.chat_app.utils.MemberUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +26,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final MemberUtils memberUtils;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     // 영어 대소문자만, 4~12자
     private static final Pattern LOGIN_ID_PATTERN = Pattern.compile("^[a-zA-Z]{4,12}$");
@@ -99,6 +103,39 @@ public class MemberService {
             throw new EntityNotFound("NOT_FOUND", "등록된 회원이 존재하지 않습니다.");
         }
 
-        member.get().changePassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+        member.get().updatePassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+    }
+
+    @Transactional
+    public void updateMemberField(String token, UpdateMemberFieldDto memberFieldDto) {
+        String loginId = jwtUtil.getLoginId(token);
+        Optional<Member> member = memberRepository.findByLoginId(loginId);
+
+        if (member.isEmpty()) {
+            throw new EntityNotFound("NOT_FOUND", "등록된 회원이 존재하지 않습니다.");
+        }
+
+        MemberField memberField = memberFieldDto.getMemberField();
+
+        if(memberField == null) {
+            throw new InvalidFieldException("INVALID_FIELD", "필드가 유효하지 않습니다.");
+        }
+
+        String field = memberField.toString();
+
+        switch (field) {
+            case "USERNAME":
+                member.get().updateUsername(memberFieldDto.getValue());
+                break;
+            case "NICKNAME":
+                member.get().updateNickname(memberFieldDto.getValue());
+                break;
+            case "EMAIL":
+                member.get().updateEmail(memberFieldDto.getValue());
+                break;
+            case "PASSWORD":
+                member.get().updatePassword(memberFieldDto.getValue());
+                break;
+        }
     }
 }

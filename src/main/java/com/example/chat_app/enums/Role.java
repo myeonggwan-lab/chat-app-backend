@@ -1,4 +1,4 @@
-package com.example.chat_app.dto;
+package com.example.chat_app.enums;
 
 public enum Role {
     ROLE_USER, ROLE_ADMIN

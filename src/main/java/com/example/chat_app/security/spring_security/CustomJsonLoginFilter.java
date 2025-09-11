@@ -1,7 +1,6 @@
 package com.example.chat_app.security.spring_security;
-import com.example.chat_app.config.ConstantConfig;
 import com.example.chat_app.service.RefreshTokenService;
-import com.example.chat_app.dto.Role;
+import com.example.chat_app.enums.Role;
 import com.example.chat_app.dto.LoginMemberDto;
 import com.example.chat_app.dto.MemberDto;
 import com.example.chat_app.security.jwt.JwtUtil;
