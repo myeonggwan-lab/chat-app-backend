@@ -3,10 +3,12 @@ package com.example.chat_app.controller;
 import com.example.chat_app.dto.MemberDto;
 import com.example.chat_app.dto.ResetPasswordDto;
 import com.example.chat_app.dto.SuccessResponse;
+import com.example.chat_app.dto.UpdateMemberFieldDto;
 import com.example.chat_app.exception.InvalidFieldException;
 import com.example.chat_app.exception.InvalidTokenException;
 import com.example.chat_app.service.MemberService;
 import com.example.chat_app.service.VerificationTokenService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,5 +73,17 @@ public class MemberController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(SuccessResponse.success("비밀번호 재설정 완료", null));
+    }
+
+    // 회원 수정
+    @PatchMapping("/members")
+    public ResponseEntity<SuccessResponse> updateMemberField(@RequestBody UpdateMemberFieldDto memberFieldDto, HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+
+        memberService.updateMemberField(token, memberFieldDto);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessResponse.success("회원 수정 완료", null));
     }
 }

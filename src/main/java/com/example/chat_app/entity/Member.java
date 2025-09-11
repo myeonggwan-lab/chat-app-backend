@@ -1,6 +1,6 @@
 package com.example.chat_app.entity;
 
-import com.example.chat_app.dto.Role;
+import com.example.chat_app.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,8 +26,14 @@ public class Member {
     @Builder.Default
     private Role role = Role.ROLE_USER;
 
+    public void updateUsername(String username) { this.username = username; }
+
+    public void updateNickname(String nickname) { this.nickname = nickname; }
+
+    public void updateEmail(String email) { this.email = email; }
+
     // 비밀번호 변경
-    public void changePassword(String password) {
+    public void updatePassword(String password) {
         this.password = password;
     }
 }

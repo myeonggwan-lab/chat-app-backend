@@ -1,6 +1,6 @@
 package com.example.chat_app.security.jwt;
 
-import com.example.chat_app.dto.Role;
+import com.example.chat_app.enums.Role;
 import com.example.chat_app.dto.MemberDto;
 import com.example.chat_app.repository.redis.InvalidTokenRepository;
 import com.example.chat_app.security.spring_security.CustomUserDetails;
