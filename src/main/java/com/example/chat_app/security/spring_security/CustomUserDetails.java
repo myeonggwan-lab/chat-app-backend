@@ -37,7 +37,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public String getEmail() {
-        return memberDto.getEmail();
+        return memberDto.getMail();
     }
 
     public String getNickname() {

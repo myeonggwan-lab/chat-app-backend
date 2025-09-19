@@ -31,8 +31,7 @@ public class ReissueService {
         }
 
         for (Cookie cookie : cookies) {
-            if(cookie.getName().equals("Authorization")) {
-                System.out.println("name = " + cookie.getName() + ", value = " + cookie.getValue());
+            if(cookie.getName().equals("refresh")) {
                 refreshToken = cookie.getValue();
             }
         }

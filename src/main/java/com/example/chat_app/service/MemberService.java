@@ -61,8 +61,8 @@ public class MemberService {
         }
     }
 
-    public void checkEmail(String email) {
-        if(!EMAIL_PATTERN.matcher(email).matches()) {
+    public void checkMail(String mail) {
+        if(!EMAIL_PATTERN.matcher(mail).matches()) {
             throw new InvalidFieldException("INVALID_EMAIL", "이메일 형식이 유효하지 않습니다.");
         }
     }
@@ -84,11 +84,11 @@ public class MemberService {
     }
 
     // 아이디 찾기
-    public String getLoginId(String email) {
-        Optional<Member> member = memberRepository.findByEmail(email);
+    public String getLoginId(String mail) {
+        Optional<Member> member = memberRepository.findByMail(mail);
 
         if(member.isEmpty()) {
-            throw new EntityNotFound("NOT_FOUND","등록된 회원이 없습니다.");
+            throw new EntityNotFound("NOT_FOUND","등록된 회원이 존재하지 없습니다.");
         }
 
         return member.get().getLoginId();
@@ -96,14 +96,24 @@ public class MemberService {
 
     // 비밀번호 재설정
     @Transactional
-    public void resetPassword(String email, ResetPasswordDto resetPasswordDto) {
-        Optional<Member> member = memberRepository.findByEmail(email);
+    public void resetPassword(String mail, ResetPasswordDto resetPasswordDto) {
+        Optional<Member> member = memberRepository.findByMail(mail);
 
         if(member.isEmpty()) {
             throw new EntityNotFound("NOT_FOUND", "등록된 회원이 존재하지 않습니다.");
         }
 
         member.get().updatePassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+    }
+
+    @Transactional
+    public MemberDto getMember(String token) {
+        String loginId = jwtUtil.getLoginId(token);
+        Optional<Member> member = memberRepository.findByLoginId(loginId);
+        if(member.isEmpty()) {
+            throw new EntityNotFound("NOT_FOUND", "등록된 회원이 존재하지 않습니다.");
+        }
+        return memberUtils.toMemberDto(member.get());
     }
 
     @Transactional
@@ -124,17 +134,17 @@ public class MemberService {
         String field = memberField.toString();
 
         switch (field) {
+            case "PASSWORD":
+                member.get().updatePassword(passwordEncoder.encode(memberFieldDto.getValue()));
+                break;
             case "USERNAME":
                 member.get().updateUsername(memberFieldDto.getValue());
                 break;
             case "NICKNAME":
                 member.get().updateNickname(memberFieldDto.getValue());
                 break;
-            case "EMAIL":
-                member.get().updateEmail(memberFieldDto.getValue());
-                break;
-            case "PASSWORD":
-                member.get().updatePassword(memberFieldDto.getValue());
+            case "MAIL":
+                member.get().updateMail(memberFieldDto.getValue());
                 break;
         }
     }

@@ -14,20 +14,20 @@ public class MemberUtils {
     public Member toMember(MemberDto memberDto) {
         return Member.builder()
                 .loginId(memberDto.getLoginId())
+                .password(passwordEncoder.encode(memberDto.getPassword()))
+                .mail(memberDto.getMail())
                 .username(memberDto.getUsername())
                 .nickname(memberDto.getNickname())
-                .email(memberDto.getEmail())
-                .password(passwordEncoder.encode(memberDto.getPassword()))
                 .build();
     }
 
     public MemberDto toMemberDto(Member member) {
         return MemberDto.builder()
-                .username(member.getUsername())
-                .nickname(member.getNickname())
-                .email(member.getEmail())
                 .loginId(member.getLoginId())
                 .password(member.getPassword())
+                .mail(member.getMail())
+                .username(member.getUsername())
+                .nickname(member.getNickname())
                 .role(member.getRole())
                 .build();
     }

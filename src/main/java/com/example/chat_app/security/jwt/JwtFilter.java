@@ -34,6 +34,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authorization.split(" ")[1];
 
+        try{
+            jwtUtil.isExpired(token);
+        } catch (ExpiredJwtException e) {
+            sendFailResponse(response, "EXPIRED", "토큰이 만료되었습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
         String category = jwtUtil.getCategory(token);
 
         if(!category.equals("access")) {
@@ -45,14 +52,9 @@ public class JwtFilter extends OncePerRequestFilter {
         String role = jwtUtil.getRole(token);
         String key = "access:" + loginId;
 
-        try{
-            jwtUtil.isExpired(token);
-        } catch (ExpiredJwtException e) {
-            sendFailResponse(response, "EXPIRED", "토큰이 만료되었습니다.", HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
+        String invalidToken = invalidTokenRepository.getToken(key);
 
-        if(invalidTokenRepository.getToken(key) != null) {
+        if(invalidToken != null && invalidToken.equals(token)) {
             sendFailResponse(response, "UNAUTHORIZED", "사용할 수 없는 토큰입니다.", HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

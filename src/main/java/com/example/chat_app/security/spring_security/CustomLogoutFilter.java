@@ -76,7 +76,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         try {
             jwtUtil.isExpired(refreshToken);
         }catch(ExpiredJwtException e) {
-            ResponseUtils.sendFailResponse(response, "EXPIRED", "토큰이 만료되었습니다..", HttpServletResponse.SC_UNAUTHORIZED);
+            ResponseUtils.sendFailResponse(response, "EXPIRED", "토큰이 만료되었습니다.", HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
@@ -88,20 +88,23 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         String loginId = jwtUtil.getLoginId(refreshToken);
-        long expiration = jwtUtil.getExpiration(accessToken);
-        System.out.println("expiration = " + expiration);
-        long ttl = expiration - System.currentTimeMillis();
-        System.out.println("ttl = " + ttl);
 
-        invalidTokenRepository.addToken("access:" + loginId, accessToken, Duration.ofMillis(ttl));
-        refreshTokenService.deleteRefreshToken("refresh:" + loginId);
+        try {
+            long expiration = jwtUtil.getExpiration(accessToken);
+            long ttl = expiration - System.currentTimeMillis();
 
-        Cookie cookie = new Cookie("refresh", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
+            invalidTokenRepository.addToken("access:" + loginId, accessToken, Duration.ofMillis(ttl));
+            refreshTokenService.deleteRefreshToken("refresh:" + loginId);
+        } catch (ExpiredJwtException e) {
+            refreshTokenService.deleteRefreshToken("refresh:" + loginId);
 
-        response.addCookie(cookie);
-        ResponseUtils.sendSuccessResponse(response, "성공적으로 로그아웃 되었습니다.", null, HttpServletResponse.SC_OK);
+            Cookie cookie = new Cookie("refresh", null);
+            cookie.setMaxAge(0);
+            cookie.setPath("/");
+
+            response.addCookie(cookie);
+            ResponseUtils.sendSuccessResponse(response, "성공적으로 로그아웃 되었습니다.", null, HttpServletResponse.SC_OK);
+        }
 
     }
 }

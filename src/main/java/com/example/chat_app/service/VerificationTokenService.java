@@ -22,12 +22,12 @@ public class VerificationTokenService {
     }
 
     public boolean verifyToken(String token) {
-        String email = getEmailFromToken(token);
+        String email = getMailFromToken(token);
 
         return email != null;
     }
 
-    public String getEmailFromToken(String token) {
+    public String getMailFromToken(String token) {
         String key = "verification:token:" + token;
 
         return verificationTokenRepository.getToken(key);

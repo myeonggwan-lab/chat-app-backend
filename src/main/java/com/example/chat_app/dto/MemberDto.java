@@ -14,7 +14,7 @@ import lombok.*;
 public class MemberDto {
     private String username;
     private String nickname;
-    private String email;
+    private String mail;
     private String loginId;
     private String password;
     @Builder.Default
