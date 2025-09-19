@@ -42,8 +42,8 @@ public class MemberController {
             case "password":
                 memberService.checkPassword(value);
                 break;
-            case "email":
-                memberService.checkEmail(value);
+            case "mail":
+                memberService.checkMail(value);
                 break;
             case "username":
                 memberService.checkUsername(value);
@@ -67,12 +67,24 @@ public class MemberController {
             throw new InvalidTokenException("INVALID_TOKEN", "토큰이 유효하지 않습니다.");
         }
 
-        String email = verificationTokenService.getEmailFromToken(token);
-        memberService.resetPassword(email, resetPasswordDto);
+        String mail = verificationTokenService.getMailFromToken(token);
+        memberService.resetPassword(mail, resetPasswordDto);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(SuccessResponse.success("비밀번호 재설정 완료", null));
+    }
+
+    // 회원 조회
+    @GetMapping("/members")
+    public ResponseEntity<SuccessResponse> getMembers(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+
+        MemberDto member = memberService.getMember(token);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessResponse.success("회원 정보 조회 완료", member));
     }
 
     // 회원 수정

@@ -8,9 +8,9 @@ import com.example.chat_app.utils.ResponseUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -54,7 +54,6 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
         }
 
         LoginMemberDto loginMemberDto = objectMapper.readValue(request.getInputStream(), LoginMemberDto.class);
-        System.out.println("loginMemberDto = " + loginMemberDto);
 
         if(!StringUtils.hasText(loginMemberDto.getLoginId()) || !StringUtils.hasText(loginMemberDto.getPassword())) {
             throw new BadCredentialsException("LoginId or Password is missing");
@@ -75,10 +74,10 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
 
         String key = "refresh:"+loginId;
         String refreshToken = refreshTokenService.createRefreshToken(key, loginId, role);
-        System.out.println("existingToken = " + refreshToken);
 
         response.setHeader("Authorization", "Bearer " + accessToken);
-        response.addCookie(createCookie(refreshToken));
+        response.addHeader("Set-Cookie", createCookie(refreshToken).toString());
+
         MemberDto data = MemberDto.builder().loginId(loginId).role(Role.valueOf(role)).build();
         ResponseUtils.sendSuccessResponse(response, "로그인 성공", data, HttpServletResponse.SC_OK);
     }
@@ -91,12 +90,13 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
     /**
      * 쿠키 생성 메서드
      */
-    private Cookie createCookie(String value) {
-        Cookie cookie = new Cookie("refresh", value);
-
-        cookie.setMaxAge(COOKIE_MAX_AGE);
-        cookie.setHttpOnly(true);
-
-        return cookie;
+    private ResponseCookie createCookie(String value) {
+        return  ResponseCookie.from("refresh", value)
+                .httpOnly(true)
+                .secure(false)        // 로컬 테스트
+                .sameSite("Lax")     // 크로스도메인 허용
+                .path("/")
+                .maxAge(COOKIE_MAX_AGE)
+                .build();
     }
 }

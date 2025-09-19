@@ -28,7 +28,7 @@ public class MailController {
 
         return ResponseEntity.
                 status(HttpStatus.OK)
-                .body(SuccessResponse.success("인증 이메일 전송 완료", mailDto));
+                .body(SuccessResponse.success("인증 메일 전송 완료", mailDto));
     }
 
     // 메일 인증
@@ -48,9 +48,9 @@ public class MailController {
                 redirectUrl = "http://localhost:3000/signup?verified=true";
                 break;
             case "findLoginId":
-                String email = verificationTokenService.getEmailFromToken(token);
+                String email = verificationTokenService.getMailFromToken(token);
                 String loginId = memberService.getLoginId(email);
-                redirectUrl = "http://localhost:3000/find-login-id-success?loginId=" + loginId;
+                redirectUrl = "http://localhost:3000/find-id-result?loginId=" + loginId;
                 break;
             case "resetPassword": // 비밀번호 재설정
                 redirectUrl = "http://localhost:3000/reset-password?token=" + token;

@@ -19,7 +19,7 @@ public class Member {
     private Long id;
     private String username;
     private String nickname;
-    private String email;
+    private String mail;
     private String loginId;
     private String password;
     @Enumerated(EnumType.STRING)
@@ -30,7 +30,7 @@ public class Member {
 
     public void updateNickname(String nickname) { this.nickname = nickname; }
 
-    public void updateEmail(String email) { this.email = email; }
+    public void updateMail(String email) { this.mail = email; }
 
     // 비밀번호 변경
     public void updatePassword(String password) {

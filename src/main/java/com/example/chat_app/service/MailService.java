@@ -23,7 +23,7 @@ public class MailService {
             getCertificationMessage(helper, mailDto.getMail(), link);
             mailSender.send(message);
         } catch(MessagingException e) {
-            throw new SendMailException("SEND_MAIL_ERROR", "인증용 메일 전송 중 오류가 발생했습니다.");
+            throw new SendMailException("SEND_MAIL_ERROR", "인증 메일 전송 중 오류가 발생했습니다.");
         }
     }
 
