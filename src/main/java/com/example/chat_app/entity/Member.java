@@ -22,9 +22,14 @@ public class Member {
     private String mail;
     private String loginId;
     private String password;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Role role = Role.ROLE_USER;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CHAT_ROOM_ID")
+    private ChatRoom chatRoom;
 
     public void updateUsername(String username) { this.username = username; }
 
@@ -35,5 +40,17 @@ public class Member {
     // 비밀번호 변경
     public void updatePassword(String password) {
         this.password = password;
+    }
+
+    public void participateChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+        chatRoom.getMemberList().add(this);
+    }
+
+    public void leaveChatRoom(ChatRoom chatRoom) {
+        if(this.chatRoom != null) {
+            chatRoom.getMemberList().remove(this);
+            this.chatRoom = null;
+        }
     }
 }

@@ -39,8 +39,8 @@ public class ReissueController {
     private ResponseCookie createCookie(String value) {
         return  ResponseCookie.from("refresh", value)
                 .httpOnly(true)
-                .secure(false)        // 로컬 테스트
-                .sameSite("Lax")     // 크로스도메인 허용
+                .secure(true)          // ngrok/HTTPS 환경에서는 true 필수
+                .sameSite("None")      // cross-origin 허용
                 .path("/")
                 .maxAge(COOKIE_MAX_AGE)
                 .build();

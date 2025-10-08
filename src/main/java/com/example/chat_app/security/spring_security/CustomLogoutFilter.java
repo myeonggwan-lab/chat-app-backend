@@ -1,10 +1,11 @@
 package com.example.chat_app.security.spring_security;
 
 import com.example.chat_app.repository.redis.InvalidTokenRepository;
-import com.example.chat_app.security.jwt.JwtUtil;
+import com.example.chat_app.security.jwt.JwtProvider;
 import com.example.chat_app.service.RefreshTokenService;
 import com.example.chat_app.utils.ResponseUtils;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -19,9 +20,11 @@ import org.springframework.web.filter.GenericFilterBean;
 import java.io.IOException;
 import java.time.Duration;
 
+import static com.example.chat_app.utils.ResponseUtils.sendFailResponse;
+
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final InvalidTokenRepository invalidTokenRepository;
 
@@ -57,8 +60,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String refreshToken = null;
 
         Cookie[] cookies = request.getCookies();
+
         if(cookies == null) {
-            ResponseUtils.sendFailResponse(response, "UNAUTHORIZED", "필요한 인증 정보가 없습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+            ResponseUtils.sendSuccessResponse(response, "성공적으로 로그아웃 되었습니다.", null, HttpServletResponse.SC_OK);
             return;
         }
 
@@ -74,23 +78,26 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         try {
-            jwtUtil.isExpired(refreshToken);
-        }catch(ExpiredJwtException e) {
+            jwtProvider.validateToken(refreshToken);
+        } catch(ExpiredJwtException e) {
             ResponseUtils.sendFailResponse(response, "EXPIRED", "토큰이 만료되었습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        } catch (JwtException e) {
+            sendFailResponse(response, "UNAUTHORIZED", "토큰이 유효하지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        String category = jwtUtil.getCategory(refreshToken);
+        String category = jwtProvider.getCategory(refreshToken);
 
         if(!category.equals("refresh")) {
             ResponseUtils.sendFailResponse(response, "UNAUTHORIZED", "유효하지 않은 토큰입니다.", HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        String loginId = jwtUtil.getLoginId(refreshToken);
+        String loginId = jwtProvider.getLoginId(refreshToken);
 
         try {
-            long expiration = jwtUtil.getExpiration(accessToken);
+            long expiration = jwtProvider.getExpiration(accessToken);
             long ttl = expiration - System.currentTimeMillis();
 
             invalidTokenRepository.addToken("access:" + loginId, accessToken, Duration.ofMillis(ttl));

@@ -20,17 +20,29 @@ public class MailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            getCertificationMessage(helper, mailDto.getMail(), link);
+
+            if(mailDto.getPurpose().equals("update")) {
+                getNumberMessage(helper, mailDto.getMail(), token);
+            } else {
+                getLinkMessage(helper, mailDto.getMail(), link);
+            }
             mailSender.send(message);
         } catch(MessagingException e) {
             throw new SendMailException("SEND_MAIL_ERROR", "인증 메일 전송 중 오류가 발생했습니다.");
         }
     }
 
-    private void getCertificationMessage(MimeMessageHelper helper, String mail, String link) throws MessagingException {
+    private void getLinkMessage(MimeMessageHelper helper, String mail, String link) throws MessagingException {
         helper.setTo(mail);
         helper.setSubject("Myeonggwan-Lab");
         helper.setText("<h1 style='text-align: center;'>Myeonggwan-Lab</h1>" +
                 "<h3 style='text-align: center;'><a href='" + link + "'>인증 링크</a></h3>", true);
+    }
+
+    private void getNumberMessage(MimeMessageHelper helper, String mail, String token) throws MessagingException {
+        helper.setTo(mail);
+        helper.setSubject("Myeonggwan-Lab");
+        helper.setText("<h1 style='text-align: center;'>Myeonggwan-Lab</h1>" +
+                "<h3 style='text-align: center;'><span>"+ token +"</span></h3>", true);
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
+import static com.example.chat_app.utils.ResponseUtils.*;
+
 @RestController
 @RequiredArgsConstructor
 public class MailController {
@@ -44,8 +46,10 @@ public class MailController {
         }
 
         switch(purpose) {
-            case "verification":
+            case "signup":
                 redirectUrl = "http://localhost:3000/signup?verified=true";
+                break;
+            case "update":
                 break;
             case "findLoginId":
                 String email = verificationTokenService.getMailFromToken(token);
@@ -59,6 +63,23 @@ public class MailController {
                 redirectUrl = "http://localhost:3000/";
         }
 
-        response.sendRedirect(redirectUrl);
+        // redirectUrl이 존재할 때만 redirect
+        if (redirectUrl != null) {
+            response.sendRedirect(redirectUrl);
+        } else {
+            // JSON 응답 처리 (회원 수정 등)
+            sendSuccessResponse(response, "이메일 인증 완료", null, HttpServletResponse.SC_OK);
+        }
+    }
+
+    // 회원 메일 수정 시 인증 번호 검증
+    @GetMapping("/members/email/verify")
+    public void checkAuthNumber(@RequestParam String authNumber, @RequestParam String mail, HttpServletResponse response) throws IOException {
+
+        if(!verificationTokenService.verifyToken(authNumber, mail)){
+            sendFailResponse(response, "인증 번호가 일치하지 않습니다.", null, HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        sendSuccessResponse(response, "이메일 인증 완료", null, HttpServletResponse.SC_OK);
     }
 }
