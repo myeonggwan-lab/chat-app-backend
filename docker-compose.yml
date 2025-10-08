@@ -1,0 +1,32 @@
+services:
+  mysql: # 컨테이너 이름
+    image: mysql:8.0.40
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    env_file:
+      - .env
+    ports:
+      - '3306:3306'
+
+  redis:
+    image: redis:7.0
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  app:
+    # db 컨테이너가 먼저 만들어진 다음에 앱이 만들어진다.
+    # 주의할 점은 depends_on은 단순히 순서를 보장할 뿐 db 컨테이너가 완전히 준비되었는지 확인하지 않는다.
+    # 따라서 app이 먼저 실행되어 오류가 발생할 수 있으므로 wait-for-it 스크립트를 사용해서 처리했다.
+    depends_on:
+      - mysql
+      - redis
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env

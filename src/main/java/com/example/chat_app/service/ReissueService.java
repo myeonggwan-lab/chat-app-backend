@@ -1,9 +1,10 @@
 package com.example.chat_app.service;
 
-import com.example.chat_app.config.ConstantConfig;
+
 import com.example.chat_app.exception.UnauthorizedException;
-import com.example.chat_app.security.jwt.JwtUtil;
+import com.example.chat_app.security.jwt.JwtProvider;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,12 +14,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 import static com.example.chat_app.config.ConstantConfig.ACCESS_EXPIRED_MS;
+import static com.example.chat_app.utils.ResponseUtils.sendFailResponse;
 
 
 @Service
 @RequiredArgsConstructor
 public class ReissueService {
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
     public String validateToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -41,12 +43,14 @@ public class ReissueService {
         }
 
         try {
-            jwtUtil.isExpired(refreshToken);
+            jwtProvider.validateToken(refreshToken);
         } catch(ExpiredJwtException e) {
             throw new UnauthorizedException("EXPIRED", "토큰이 만료되었습니다.");
+        } catch (JwtException e) {
+            sendFailResponse(response, "UNAUTHORIZED", "토큰이 유효하지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
         }
 
-        if(!jwtUtil.getCategory(refreshToken).equals("refresh")) {
+        if(!jwtProvider.getCategory(refreshToken).equals("refresh")) {
             throw new UnauthorizedException("UNAUTHORIZED", "토큰이 유효하지 않습니다.");
         }
 
@@ -54,15 +58,15 @@ public class ReissueService {
     }
 
     public String reissueAccessToken(String refreshToken) {
-        String loginId = jwtUtil.getLoginId(refreshToken);
-        String role = jwtUtil.getRole(refreshToken);
+        String loginId = jwtProvider.getLoginId(refreshToken);
+        String role = jwtProvider.getRole(refreshToken);
 
-        return jwtUtil.createJwt("access", loginId, role, ACCESS_EXPIRED_MS);
+        return jwtProvider.createToken("access", loginId, role, ACCESS_EXPIRED_MS);
     }
 
     public String reissueRefreshToken(String refreshToken) {
-        String loginId = jwtUtil.getLoginId(refreshToken);
-        String role = jwtUtil.getRole(refreshToken);
+        String loginId = jwtProvider.getLoginId(refreshToken);
+        String role = jwtProvider.getRole(refreshToken);
         String key = "refresh:" + loginId;
 
         if(refreshTokenService.getRefreshToken(key) != null) {

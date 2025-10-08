@@ -1,9 +1,9 @@
 package com.example.chat_app.security.spring_security;
+import com.example.chat_app.security.jwt.JwtProvider;
 import com.example.chat_app.service.RefreshTokenService;
 import com.example.chat_app.enums.Role;
 import com.example.chat_app.dto.LoginMemberDto;
 import com.example.chat_app.dto.MemberDto;
-import com.example.chat_app.security.jwt.JwtUtil;
 import com.example.chat_app.utils.ResponseUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -31,18 +31,18 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
 
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
     private final RefreshTokenService refreshTokenService;
 
-    public CustomJsonLoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, ObjectMapper objectMapper,
+    public CustomJsonLoginFilter(AuthenticationManager authenticationManager, JwtProvider jwtProvider, ObjectMapper objectMapper,
                                  RefreshTokenService refreshTokenService) {
         // RequestMatcher 람다로 교체: POST /login 요청만 필터링
         super(request -> LOGIN_URL.equals(request.getRequestURI())
                 && HTTP_METHOD.equalsIgnoreCase(request.getMethod()));
 
         setAuthenticationManager(authenticationManager);
-        this.jwtUtil = jwtUtil;
+        this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
         this.refreshTokenService = refreshTokenService;
     }
@@ -70,7 +70,7 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
         String loginId = userDetails.getUsername();
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        String accessToken = jwtUtil.createJwt("access", loginId, role, ACCESS_EXPIRED_MS);
+        String accessToken = jwtProvider.createToken("access", loginId, role, ACCESS_EXPIRED_MS);
 
         String key = "refresh:"+loginId;
         String refreshToken = refreshTokenService.createRefreshToken(key, loginId, role);
@@ -93,8 +93,8 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
     private ResponseCookie createCookie(String value) {
         return  ResponseCookie.from("refresh", value)
                 .httpOnly(true)
-                .secure(false)        // 로컬 테스트
-                .sameSite("Lax")     // 크로스도메인 허용
+                .secure(true)          // ngrok/HTTPS 환경에서는 true 필수
+                .sameSite("None")      // cross-origin 허용
                 .path("/")
                 .maxAge(COOKIE_MAX_AGE)
                 .build();

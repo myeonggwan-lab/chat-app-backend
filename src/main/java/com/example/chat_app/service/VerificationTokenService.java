@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -13,18 +12,22 @@ public class VerificationTokenService {
     private final VerificationTokenRepository verificationTokenRepository;
 
     public String createToken(String mail) {
-        String token = UUID.randomUUID().toString();
+        int token = (int)(Math.random() * 900000) + 100000; // 100000~999999
         String key = "verification:token:" + token;
 
         verificationTokenRepository.addToken(key, mail, Duration.ofMinutes(3));
 
-        return token;
+        return String.valueOf(token);
     }
 
     public boolean verifyToken(String token) {
-        String email = getMailFromToken(token);
+        String mail = getMailFromToken(token);
 
-        return email != null;
+        return mail != null;
+    }
+
+    public boolean verifyToken(String token, String mail) {
+        return mail.equals(getMailFromToken(token));
     }
 
     public String getMailFromToken(String token) {
