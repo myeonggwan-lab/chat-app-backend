@@ -62,6 +62,7 @@ public class SecurityConfig {
             CorsConfiguration config = new CorsConfiguration();
 
             config.setAllowedOriginPatterns(List.of(
+                    "https://chat-app-frontend-viy2d3cq5-myeonggwans-projects.vercel.app",
                     "http://localhost:3000",
                     "https://*.ngrok-free.dev"
             ));
