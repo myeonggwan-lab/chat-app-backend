@@ -64,7 +64,8 @@ public class SecurityConfig {
             config.setAllowedOriginPatterns(List.of(
                     "https://chat-app-frontend-viy2d3cq5-myeonggwans-projects.vercel.app",
                     "http://localhost:3000",
-                    "https://*.ngrok-free.dev"
+                    "https://*.ngrok-free.dev",
+                    "http://140.245.65.222"
             ));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(List.of("Authorization","Content-Type")); // 필요한 헤더만
