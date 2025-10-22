@@ -8,6 +8,19 @@ services:
       - .env
     ports:
       - '3306:3306'
+    environment:
+      # ✅ 프리티어 안정화 핵심 — 메모리/버퍼 제한
+      - MYSQL_INNODB_BUFFER_POOL_SIZE=64M
+      - MYSQL_INNODB_LOG_FILE_SIZE=32M
+      - MYSQL_INNODB_LOG_BUFFER_SIZE=8M
+      - MYSQL_MAX_CONNECTIONS=100
+    healthcheck:
+        # ✅ MySQL이 “정상적으로 준비된 후에만” app이 실행되도록
+        test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+    mem_limit: 300m  # ✅ 프리티어 환경용 메모리 제한
 
   redis:
     image: redis:7.0

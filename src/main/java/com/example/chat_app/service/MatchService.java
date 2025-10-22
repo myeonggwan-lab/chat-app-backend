@@ -25,7 +25,6 @@ public class MatchService {
     private final MatchQueueRepository matchQueueRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomRepository chatRoomRepository;
-//    private final ChatRoomRepository chatRoomRepository;
 
     // synchronized는 JVM 단위 락으로 한번에 하나의 스레드만 메서드 실행하도록 설정
     // 단일 서버의 경우 상관 없지만 다중 서버의 경우 경쟁 상태 위험 -> 분산락 사용 고려
@@ -51,17 +50,6 @@ public class MatchService {
             Member memberA = memberRepository.findByLoginId(userA_LoginId).orElseThrow();
             Member memberB = memberRepository.findByLoginId(userB_LoginId).orElseThrow();
 
-            // 채팅방 엔티티 사용 코드
-//            ChatRoom chatRoom = ChatRoom.builder()
-//                    .roomName("room-" + UUID.randomUUID().toString())
-//                    .createdAt(LocalDateTime.now())
-//                    .build();
-
-//            memberA.participateChatRoom(chatRoom);
-//            memberB.participateChatRoom(chatRoom);
-
-//            ChatRoomDto chatRoomDto = new ChatRoomDto(chatRoom.getRoomName());
-
             ChatRoomDto chatRoomDto = new ChatRoomDto("room-" + UUID.randomUUID().toString());
 
             chatRoomRepository.addParticipant(chatRoomDto, memberA.getLoginId());
@@ -79,10 +67,6 @@ public class MatchService {
                     "/queue/matched-room",
                     chatRoomDto
             );
-
-            // 채팅방 엔티티 사용 코드
-//            chatRoomRepository.save(chatRoom);
-
 
             return chatRoomDto;
         }

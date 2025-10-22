@@ -1,42 +1,32 @@
 package com.example.chat_app.service;
 
-import com.example.chat_app.dto.CreateChatRoomDto;
+import com.example.chat_app.dto.ChatMessageDto;
 import com.example.chat_app.entity.Member;
-import com.example.chat_app.exception.EntityNotFound;
-//import com.example.chat_app.repository.mysql.ChatRoomRepository;
 import com.example.chat_app.repository.mysql.MemberRepository;
-
-import com.example.chat_app.security.jwt.JwtProvider;
+import com.example.chat_app.repository.redis.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ChatService {
-    private final JwtProvider jwtProvider;
+    private final ChatRoomRepository chatRoomRepository;
     private final MemberRepository memberRepository;
-//    private final ChatRoomRepository chatRoomRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public void createChatRoom(String token, CreateChatRoomDto createChatRoomDto) {
-        String loginId = jwtProvider.getLoginId(token);
+    public void leaveChatRoom(String roomId, String loginId) {
+        Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new RuntimeException("Member not found"));
 
-        Optional<Member> member = memberRepository.findByLoginId(loginId);
-
-        if(member.isEmpty()) {
-            throw new EntityNotFound("NOT_FOUND", "등록된 회원이 존재하지 않습니다.");
+        if(chatRoomRepository.getParticipantCount(roomId) == 2) {
+            ChatMessageDto systemMessage = new ChatMessageDto("System", member.getLoginId() + "님이 채팅방을 나갔습니다.");
+            simpMessagingTemplate.convertAndSend("/sub/chat/" + roomId, systemMessage);
         }
 
-//        ChatRoom chatRoom = ChatRoom.builder()
-//                .creator(member.get())
-//                .roomName(createChatRoomDto.getRoomName())
-//                .createdAt(LocalDateTime.now())
-//                .build();
+        chatRoomRepository.deleteParticipant(roomId, member.getLoginId());
 
-//        chatRoomRepository.save(chatRoom);
-
+        if(chatRoomRepository.getParticipantCount(roomId) == 0) {
+            chatRoomRepository.deleteChatRoom(roomId);
+        }
     }
 }
