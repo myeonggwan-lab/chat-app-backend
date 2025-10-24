@@ -19,5 +19,7 @@ EXPOSE 8080
 
 # 컨테이너가 실행될 때 기본적으로 실행될 명령어를 설정(Java Application을 실행하는 명령어)
 #ENTRYPOINT ["/wait-for-it.sh", "db:3306", "--", "java", "-jar", "/app.jar"]
-ENTRYPOINT ["/wait-for-it.sh", "mysql:3306", "--", "/wait-for-it.sh", "redis:6379", "--", "java", "-jar", "/app.jar"]
+#ENTRYPOINT ["/wait-for-it.sh", "mysql:3306", "--", "/wait-for-it.sh", "redis:6379", "--", "java", "-jar", "/app.jar"]
+ENTRYPOINT ["/wait-for-it.sh", "mysql:3306", "--", "/wait-for-it.sh", "redis:6379", "--", "java", "-Xms128m", "-Xmx256m", "-jar", "/app.jar"]
+
 
