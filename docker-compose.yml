@@ -24,10 +24,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 768M
+    mem_limit: 700m
+    memswap_limit: 1.5g
 
   redis:
     image: redis:7.0
@@ -42,10 +40,8 @@ services:
       "--maxmemory", "128mb",
       "--maxmemory-policy", "allkeys-lru"
     ]
-    deploy:
-      resources:
-        limits:
-          memory: 200M
+    mem_limit: 200m
+    memswap_limit: 400m
 
   app:
     depends_on:
@@ -59,7 +55,5 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+    mem_limit: 300m
+    memswap_limit: 600m
