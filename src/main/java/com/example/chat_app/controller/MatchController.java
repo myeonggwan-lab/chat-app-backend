@@ -30,6 +30,7 @@ public class MatchController {
     @PostMapping("/leave")
     public ResponseEntity<?> leaveQueue(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.split(" ")[1];
+
         matchService.leaveQueue(token);
 
         return ResponseEntity.ok("대기열에서 나갔습니다.");

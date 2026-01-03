@@ -68,6 +68,7 @@ public class MemberController {
         }
 
         String mail = verificationTokenService.getMailFromToken(token);
+
         memberService.resetPassword(mail, resetPasswordDto);
 
         return ResponseEntity

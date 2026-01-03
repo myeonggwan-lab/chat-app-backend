@@ -5,6 +5,7 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
+// TODO: 점검 포인트(삭제 유무 확인)
 @RedisHash(value = "refreshToken", timeToLive = 3600)
 public class RefreshToken {
     @Id

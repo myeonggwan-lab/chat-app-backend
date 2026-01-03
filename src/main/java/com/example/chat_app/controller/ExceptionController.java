@@ -7,6 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 모든 Controller에서 발생한 예외를 처리하는 전용 Controller
+ */
 @RestControllerAdvice
 public class ExceptionController {
     @ExceptionHandler(UnauthorizedException.class)

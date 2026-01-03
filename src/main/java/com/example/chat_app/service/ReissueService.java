@@ -16,14 +16,22 @@ import java.io.IOException;
 import static com.example.chat_app.config.ConstantConfig.ACCESS_EXPIRED_MS;
 import static com.example.chat_app.utils.ResponseUtils.sendFailResponse;
 
-
+/**
+ * JWT 재발급 서비스 계층
+ */
 @Service
 @RequiredArgsConstructor
 public class ReissueService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-    public String validateToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    /**
+     * JWT RefreshToken 검증
+     * @param request HttpServletRequest
+     * @param response HttpServletResponse
+     * @return String(RefreshToken)
+     */
+    public String validateRefreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String refreshToken = null;
 
         Cookie[] cookies = request.getCookies();
@@ -57,6 +65,11 @@ public class ReissueService {
         return refreshToken;
     }
 
+    /**
+     * JWT AccessToken 재발급
+     * @param refreshToken JWT RefreshToken
+     * @return 새로 발급한 JWT AccessToken
+     */
     public String reissueAccessToken(String refreshToken) {
         String loginId = jwtProvider.getLoginId(refreshToken);
         String role = jwtProvider.getRole(refreshToken);
@@ -64,6 +77,11 @@ public class ReissueService {
         return jwtProvider.createToken("access", loginId, role, ACCESS_EXPIRED_MS);
     }
 
+    /**
+     * JWT RefreshToken 재발급
+     * @param refreshToken JWT RefreshToken
+     * @return 새로 발급한 JWT RefreshToken
+     */
     public String reissueRefreshToken(String refreshToken) {
         String loginId = jwtProvider.getLoginId(refreshToken);
         String role = jwtProvider.getRole(refreshToken);

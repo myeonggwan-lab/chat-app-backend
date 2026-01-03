@@ -93,8 +93,8 @@ public class CustomJsonLoginFilter extends AbstractAuthenticationProcessingFilte
     private ResponseCookie createCookie(String value) {
         return  ResponseCookie.from("refresh", value)
                 .httpOnly(true)
-                .secure(true)          // ngrok/HTTPS 환경에서는 true 필수
-                .sameSite("None")      // cross-origin 허용
+                .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(COOKIE_MAX_AGE)
                 .build();

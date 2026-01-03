@@ -22,28 +22,27 @@ import static com.example.chat_app.config.ConstantConfig.COOKIE_MAX_AGE;
 public class ReissueController {
     private final ReissueService reissueService;
 
+    // JWT 재발급
     @PostMapping("/auth/reissue")
     public ResponseEntity<SuccessResponse> reissueToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String token = reissueService.validateToken(request, response);
-        String accessToken = reissueService.reissueAccessToken(token);
-        String refreshToken = reissueService.reissueRefreshToken(token);
+        String refreshToken = reissueService.validateRefreshToken(request, response);
+        String newAccessToken = reissueService.reissueAccessToken(refreshToken);
+        String newRefreshToken = reissueService.reissueRefreshToken(refreshToken);
 
-        response.setHeader("Authorization", "Bearer " + accessToken);
-        response.addHeader("Set-Cookie", createCookie(refreshToken).toString());
+        response.setHeader("Authorization", "Bearer " + newAccessToken);
+        response.addHeader("Set-Cookie", createCookie(newRefreshToken).toString());
 
         return ResponseEntity.status(HttpStatus.OK).body(SuccessResponse.success("토큰 재발급 완료", null));
     }
-    /**
-     * 쿠키 생성 메서드
-     */
+
+    // 쿠키 생성
     private ResponseCookie createCookie(String value) {
         return  ResponseCookie.from("refresh", value)
-                .httpOnly(true)
-                .secure(true)          // ngrok/HTTPS 환경에서는 true 필수
-                .sameSite("None")      // cross-origin 허용
-                .path("/")
-                .maxAge(COOKIE_MAX_AGE)
+                .httpOnly(true) // JavaScript에서 접근 불가
+                .secure(true) // HTTPS 연결에서만 쿠키 전송
+                .sameSite("None") // Cross-Origin 요청에서도 쿠키 전송
+                .path("/") // 쿠키가 전체 경로에서 유효
+                .maxAge(COOKIE_MAX_AGE) // 쿠키 유효 시간
                 .build();
     }
-
 }

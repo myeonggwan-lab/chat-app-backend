@@ -16,18 +16,24 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * 회원 매칭 관련 서비스 계층
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class MatchService {
     private final JwtProvider jwtProvider;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate; // 서버가 클라이언트에게 메세지를 쉽게 보내도록 돕는 객체
     private final MatchQueueRepository matchQueueRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    // synchronized는 JVM 단위 락으로 한번에 하나의 스레드만 메서드 실행하도록 설정
-    // 단일 서버의 경우 상관 없지만 다중 서버의 경우 경쟁 상태 위험 -> 분산락 사용 고려
+    /**
+     * 매칭 대기열 큐에 참여
+     * @param token JWT AccessToken
+     * @return 대기열 큐에 두 명 모이면 ChatRoomDto 반환하고 그렇지 않으면 NULL 반환
+     */
     public synchronized ChatRoomDto joinQueue(String token) {
         String loginId = jwtProvider.getLoginId(token);
 
@@ -38,13 +44,13 @@ public class MatchService {
 
         // 대기열에 존재하는 사용자 수 확인
         if(queueSize >= 2) {
-            // 사용자 두명 조회
-            Set<Object> candidates = matchQueueRepository.popFromQueue();
+            Set<Object> candidates = matchQueueRepository.popFromQueue(); // 사용자 두 명 조회
 
             Iterator<Object> iterator = candidates.iterator();
             String userA_LoginId = (String) iterator.next();
             String userB_LoginId = (String) iterator.next();
 
+            // 매칭 대기열 큐에서 대기 중인 사용자 정보 가져왔으므로 대기열 큐에서 해당 사용자 제거
             matchQueueRepository.removeFromQueue(userA_LoginId, userB_LoginId);
 
             Member memberA = memberRepository.findByLoginId(userA_LoginId).orElseThrow();
@@ -55,7 +61,7 @@ public class MatchService {
             chatRoomRepository.addParticipant(chatRoomDto, memberA.getLoginId());
             chatRoomRepository.addParticipant(chatRoomDto, memberB.getLoginId());
 
-            // 6️⃣ WebSocket으로 실시간 알림
+            // 해당 사용자에게 WebSocket으로 실시간 알림
             simpMessagingTemplate.convertAndSendToUser(
                     userA_LoginId,
                     "/queue/matched-room",
@@ -74,6 +80,10 @@ public class MatchService {
         return null;
     }
 
+    /**
+     * 매칭 대기열 큐에서 나가기
+     * @param token JWT AccessToken
+     */
     public synchronized void leaveQueue(String token) {
         String loginId = jwtProvider.getLoginId(token);
         matchQueueRepository.removeFromQueue(loginId);

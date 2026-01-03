@@ -25,6 +25,9 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
 
+/**
+ * Spring Security 설정 클래스
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -52,9 +55,10 @@ public class SecurityConfig {
         http.httpBasic((auth) -> auth.disable());
         http.logout((logout) -> logout.disable());
 
-        http.addFilterAt(new CustomJsonLoginFilter(
-                        authenticationManager(authenticationConfiguration), jwtProvider, objectMapper, refreshTokenService),
-                UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(
+                new CustomJsonLoginFilter(
+                        authenticationManager(authenticationConfiguration), jwtProvider, objectMapper, refreshTokenService
+                ), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(new JwtFilter(jwtProvider, invalidTokenRepository), CustomJsonLoginFilter.class);
         http.addFilterAt(new CustomLogoutFilter(jwtProvider, refreshTokenService, invalidTokenRepository), LogoutFilter.class);
 

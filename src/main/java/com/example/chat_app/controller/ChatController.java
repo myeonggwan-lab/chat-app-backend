@@ -16,8 +16,9 @@ import java.security.Principal;
 public class ChatController {
     private final ChatService chatService;
 
-    @MessageMapping("/chat.send/{roomId}")
-    @SendTo("/sub/chat/{roomId}")
+    // 스프링의 메세지 핸들러(@MessageMapping)가 브로커로 전달되기 전에 잡아서 처리하는 메서드
+    @MessageMapping("/chat.send/{roomId}") // 클라이언트 -> 서버
+    @SendTo("/sub/chat/{roomId}") // 서버 -> 구독자
     public ChatMessageDto sendMessage(
             @DestinationVariable String roomId,
             @Payload ChatMessageDto message, Principal principal) {

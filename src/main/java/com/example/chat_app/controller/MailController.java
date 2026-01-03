@@ -46,12 +46,12 @@ public class MailController {
         }
 
         switch(purpose) {
-            case "signup":
+            case "signup": // 회원가입
                 redirectUrl = "http://localhost:3000/signup?verified=true";
                 break;
             case "update":
                 break;
-            case "findLoginId":
+            case "findLoginId": // 아이디 찾기
                 String email = verificationTokenService.getMailFromToken(token);
                 String loginId = memberService.getLoginId(email);
                 redirectUrl = "http://localhost:3000/find-id-result?loginId=" + loginId;
@@ -73,6 +73,7 @@ public class MailController {
     }
 
     // 회원 메일 수정 시 인증 번호 검증
+    // TODO: 이메일 수정 시 토큰 검증
     @GetMapping("/members/email/verify")
     public void checkAuthNumber(@RequestParam String authNumber, @RequestParam String mail, HttpServletResponse response) throws IOException {
 

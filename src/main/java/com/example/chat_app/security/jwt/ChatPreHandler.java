@@ -19,11 +19,12 @@ public class ChatPreHandler implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        // 메시지 컨텍스트 유지
+        // StompHeaderAccessor는 STOMP 메세지의 헤더를 읽고 수정하기 위한 도구
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+        // StompHeaderAccessor.getCommand()는 STOMP 프로토콜의 프레임 타입의 값을 얻어온다.
         if (StompCommand.CONNECT.equals(accessor.getCommand()) || StompCommand.SEND.equals(accessor.getCommand())) {
-            String token = accessor.getFirstNativeHeader("Authorization"); // connectHeaders에서 읽음
+            String token = accessor.getFirstNativeHeader("Authorization");
 
             if (token != null && token.startsWith("Bearer ")) {
                 token = token.split(" ")[1];

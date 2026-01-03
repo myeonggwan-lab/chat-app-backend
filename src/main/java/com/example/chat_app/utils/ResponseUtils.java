@@ -8,9 +8,11 @@ import java.io.IOException;
 import static com.example.chat_app.dto.FailResponse.*;
 import static com.example.chat_app.dto.SuccessResponse.*;
 
+/**
+ * 응답 관련 편의 클래스
+ */
 public class ResponseUtils {
     public static void sendSuccessResponse(HttpServletResponse response, String message, Object data, int status) throws IOException {
-
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(success(message, data));
 

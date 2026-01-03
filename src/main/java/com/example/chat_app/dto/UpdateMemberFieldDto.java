@@ -14,6 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UpdateMemberFieldDto {
     private String value;
+
     @Enumerated(EnumType.STRING)
     private MemberField memberField;
 }

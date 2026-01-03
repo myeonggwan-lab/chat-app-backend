@@ -15,6 +15,13 @@ public class RefreshTokenService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    /**
+     * JWT RefreshToken 생성
+     * @param key 키
+     * @param loginId JWT Payload에 담을 사용자 아이디
+     * @param role JWT Payload에 담을 사용자 권한
+     * @return 새로 생성한 RefreshToken
+     */
     public String createRefreshToken(String key, String loginId, String role) {
         String refreshToken = getRefreshToken(key);
         if(refreshToken == null) {
@@ -24,10 +31,19 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    /**
+     * JWT RefreshToken 가져오기
+     * @param key 키
+     * @return JWT RefreshToken
+     */
     public String getRefreshToken(String key) {
         return refreshTokenRepository.getToken(key);
     }
 
+    /**
+     * JWT RefreshToken 삭제
+     * @param key 키
+     */
     public void deleteRefreshToken(String key) {
         refreshTokenRepository.deleteToken(key);
     }
